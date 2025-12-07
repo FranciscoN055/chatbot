@@ -8,7 +8,7 @@ Un chatbot inteligente para WhatsApp que utiliza Twilio para mensajería, Groq A
 - Una cuenta de Twilio con WhatsApp habilitado
 - Una API Key de Groq (gratuita, sin tarjeta de crédito)
 - Base de datos PostgreSQL (recomendado: Neon.tech gratis)
-- Railway.app o Render.com para deploy en producción (gratis)
+- Google Cloud Platform con $300 en créditos gratis (para producción)
 
 ## 🚀 Instalación
 
@@ -104,51 +104,59 @@ ngrok http 3000
 5. **Configurar en Twilio:**
    - Pega esta URL en la configuración de WhatsApp Sandbox de Twilio
 
-### Opción 2: Desplegar en Render.com (Producción - Gratis)
+### Opción 2: Desplegar en Google Cloud Run (Producción - $300 Gratis)
 
-1. **Crear cuenta en Render.com:**
-   - Ve a [render.com](https://render.com) y crea una cuenta gratuita
+**Requisitos previos:**
+- [Google Cloud CLI instalado](https://cloud.google.com/sdk/docs/install)
+- Cuenta de Google Cloud con $300 en créditos trial
 
-2. **Conectar tu repositorio:**
-   - Click en "New +" → "Web Service"
-   - Conecta tu cuenta de GitHub
-   - Selecciona el repositorio `FranciscoN055/chatbot`
+**Pasos:**
 
-3. **Configurar el servicio:**
-   - **Name:** `chatbot-whatsapp` (o el nombre que prefieras)
-   - **Environment:** `Node`
-   - **Build Command:** `npm install`
-   - **Start Command:** `npm start`
-   - **Plan:** Free
+1. **Autenticarte y configurar proyecto:**
+```bash
+gcloud auth login
+gcloud config set project TU_PROJECT_ID
+```
 
-4. **Agregar variables de entorno:**
-   - Click en "Advanced" → "Add Environment Variable"
-   - Agrega cada variable de tu `.env`:
-     ```
-     TWILIO_ACCOUNT_SID=tu_account_sid_de_twilio
-     TWILIO_AUTH_TOKEN=tu_auth_token_de_twilio
-     TWILIO_WHATSAPP_NUMBER=whatsapp:+14155238886
-     GROQ_API_KEY=tu_groq_api_key
-     DATABASE_URL=tu_postgresql_url_de_neon
-     PORT=3000
-     ```
+2. **Habilitar servicios necesarios:**
+```bash
+gcloud services enable cloudbuild.googleapis.com run.googleapis.com
+```
 
-5. **Deploy:**
-   - Click en "Create Web Service"
-   - Render automáticamente construirá y desplegará tu app
-   - Te dará una URL como: `https://chatbot-whatsapp-xxxx.onrender.com`
+3. **Dar permisos a la cuenta de servicio:**
+```bash
+# Reemplaza PROJECT_NUMBER con tu número de proyecto
+gcloud projects add-iam-policy-binding TU_PROJECT_ID \
+  --member="serviceAccount:PROJECT_NUMBER-compute@developer.gserviceaccount.com" \
+  --role="roles/cloudbuild.builds.builder"
 
-6. **Configurar Webhook en Twilio:**
+gcloud projects add-iam-policy-binding TU_PROJECT_ID \
+  --member="serviceAccount:PROJECT_NUMBER-compute@developer.gserviceaccount.com" \
+  --role="roles/storage.objectViewer"
+```
+
+4. **Deploy (desde la carpeta del proyecto):**
+```bash
+gcloud run deploy chatbot-whatsapp \
+  --source . \
+  --platform managed \
+  --region us-central1 \
+  --allow-unauthenticated \
+  --set-env-vars "TWILIO_ACCOUNT_SID=tu_sid,TWILIO_AUTH_TOKEN=tu_token,TWILIO_WHATSAPP_NUMBER=whatsapp:+14155238886,GROQ_API_KEY=tu_groq_key,DATABASE_URL=tu_database_url"
+```
+
+5. **Configurar Webhook en Twilio:**
+   - Te dará una URL como: `https://chatbot-whatsapp-xxxxx.us-central1.run.app`
    - Ve a [Twilio Console](https://console.twilio.com/us1/develop/sms/try-it-out/whatsapp-learn)
-   - En "When a message comes in", pon: `https://tu-app.onrender.com/webhook`
+   - En "When a message comes in", pon: `https://tu-url.run.app/webhook`
    - Método: `POST`
-   - Guarda los cambios
 
-**⚠️ Nota importante de Render.com (plan gratuito):**
-- El servicio se "duerme" después de 15 minutos de inactividad
-- El primer mensaje puede tardar 30-60 segundos en responder (mientras "despierta")
-- Después funciona normal
-- Se reinicia automáticamente cada mes
+**✅ Ventajas de Google Cloud Run:**
+- Siempre activo (no se duerme)
+- Escalado automático
+- $300 en créditos gratis por 90 días
+- Performance superior
+- Ideal para producción
 
 ## ▶️ Ejecutar el Proyecto
 
@@ -173,12 +181,17 @@ El servidor estará disponible en `http://localhost:3000`
 
 ```
 chatbot/
-├── server.js           # Servidor Express principal
-├── package.json        # Dependencias del proyecto
-├── .env               # Variables de entorno (no subir a git)
-├── .env.example       # Ejemplo de configuración
-├── .gitignore         # Archivos ignorados por git
-└── README.md          # Este archivo
+├── server.js              # Servidor Express principal
+├── setup_database.js      # Script para crear base de datos
+├── add_horarios.js        # Script para agregar horarios
+├── package.json           # Dependencias del proyecto
+├── Dockerfile             # Configuración Docker para Cloud Run
+├── .dockerignore          # Archivos excluidos de Docker
+├── .env                   # Variables de entorno (no subir a git)
+├── .env.example           # Ejemplo de configuración
+├── .gitignore             # Archivos ignorados por git
+├── DEPLOY_GOOGLE_CLOUD.md # Guía de despliegue en GCP
+└── README.md              # Este archivo
 ```
 
 ## 💡 Características
@@ -212,10 +225,9 @@ Cambia este mensaje para darle una personalidad diferente, como:
 ## ⚠️ Notas Importantes
 
 - El historial de conversaciones se guarda en memoria (se pierde al reiniciar el servidor)
-- Para producción, considera usar una base de datos (MongoDB, PostgreSQL, etc.)
 - Groq AI es GRATUITO (sin necesidad de tarjeta de crédito)
 - Neon PostgreSQL tiene plan gratuito generoso
-- Render.com tiene plan gratuito (con auto-sleep después de 15 min inactividad)
+- Google Cloud Run tiene $300 en créditos gratis por 90 días
 - El sandbox de WhatsApp de Twilio tiene limitaciones (solo números pre-autorizados)
 - Para producción, necesitas una cuenta de WhatsApp Business aprobada
 
@@ -245,7 +257,7 @@ Cambia este mensaje para darle una personalidad diferente, como:
 - [Documentación de Twilio WhatsApp](https://www.twilio.com/docs/whatsapp)
 - [Documentación de Groq AI](https://console.groq.com/docs)
 - [Neon PostgreSQL](https://neon.tech/docs)
-- [Render.com Deploy](https://render.com/docs)
+- [Google Cloud Run](https://cloud.google.com/run/docs)
 - [Express.js](https://expressjs.com/)
 - [ngrok](https://ngrok.com/docs)
 
