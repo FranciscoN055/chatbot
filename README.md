@@ -74,7 +74,6 @@ PORT=3000
 5. Ejecuta el script de configuración:
    ```bash
    node setup_database.js
-   node add_horarios.js
    ```
 
 ## 🌐 Exponer tu servidor local (Desarrollo)
@@ -158,6 +157,22 @@ gcloud run deploy chatbot-whatsapp \
 - Performance superior
 - Ideal para producción
 
+**🔄 Para actualizar el chatbot después de cambios:**
+```bash
+# Después de modificar el código:
+git add .
+git commit -m "descripción de los cambios"
+git push
+
+# Re-desplegar en Google Cloud:
+gcloud run deploy chatbot-whatsapp \
+  --source . \
+  --platform managed \
+  --region us-central1 \
+  --allow-unauthenticated
+```
+*Las variables de entorno se mantienen, no necesitas ponerlas de nuevo*
+
 ## ▶️ Ejecutar el Proyecto
 
 ```bash
@@ -181,17 +196,15 @@ El servidor estará disponible en `http://localhost:3000`
 
 ```
 chatbot/
-├── server.js              # Servidor Express principal
-├── setup_database.js      # Script para crear base de datos
-├── add_horarios.js        # Script para agregar horarios
-├── package.json           # Dependencias del proyecto
-├── Dockerfile             # Configuración Docker para Cloud Run
-├── .dockerignore          # Archivos excluidos de Docker
-├── .env                   # Variables de entorno (no subir a git)
-├── .env.example           # Ejemplo de configuración
-├── .gitignore             # Archivos ignorados por git
-├── DEPLOY_GOOGLE_CLOUD.md # Guía de despliegue en GCP
-└── README.md              # Este archivo
+├── server.js           # Servidor Express principal
+├── setup_database.js   # Script para crear base de datos
+├── package.json        # Dependencias del proyecto
+├── Dockerfile          # Configuración Docker para Cloud Run
+├── .dockerignore       # Archivos excluidos de Docker
+├── .env                # Variables de entorno (no subir a git)
+├── .env.example        # Ejemplo de configuración
+├── .gitignore          # Archivos ignorados por git
+└── README.md           # Este archivo
 ```
 
 ## 💡 Características
