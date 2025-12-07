@@ -32,8 +32,11 @@ TWILIO_ACCOUNT_SID=tu_account_sid_aqui
 TWILIO_AUTH_TOKEN=tu_auth_token_aqui
 TWILIO_WHATSAPP_NUMBER=whatsapp:+14155238886
 
-# OpenAI (obtén tu API key en https://platform.openai.com/api-keys)
-OPENAI_API_KEY=tu_api_key_de_openai_aqui
+# Groq AI (obtén tu API key GRATIS en https://console.groq.com/keys)
+GROQ_API_KEY=tu_groq_api_key_aqui
+
+# Base de datos PostgreSQL
+DATABASE_URL=tu_postgresql_url_aqui
 
 # Puerto del servidor
 PORT=3000
@@ -55,11 +58,24 @@ PORT=3000
    - En "When a message comes in", ingresa la URL de tu webhook
    - Si estás en desarrollo local, usa ngrok (ver sección abajo)
 
-## 🔑 Configuración de OpenAI
+## 🔑 Configuración de Groq AI (Gratuito)
 
-1. Ve a [OpenAI Platform](https://platform.openai.com/api-keys)
-2. Crea una nueva API Key
-3. Cópiala y pégala en tu archivo `.env`
+1. Ve a [Groq Console](https://console.groq.com/keys)
+2. Crea una cuenta (NO requiere tarjeta de crédito)
+3. Crea una nueva API Key
+4. Cópiala y pégala en tu archivo `.env`
+
+## 🗄️ Configuración de Base de Datos PostgreSQL
+
+1. Ve a [Neon.tech](https://neon.tech) (plan gratuito disponible)
+2. Crea una nueva base de datos
+3. Copia la connection string
+4. Pégala en `DATABASE_URL` en tu `.env`
+5. Ejecuta el script de configuración:
+   ```bash
+   node setup_database.js
+   node add_horarios.js
+   ```
 
 ## 🌐 Exponer tu servidor local (Desarrollo)
 
@@ -167,11 +183,14 @@ chatbot/
 
 ## 💡 Características
 
-- ✅ Respuestas con IA usando GPT-3.5-turbo
+- ✅ Respuestas con IA usando Groq (llama-3.3-70b-versatile)
+- ✅ Consultas inteligentes a base de datos PostgreSQL
+- ✅ Generación automática de SQL desde lenguaje natural
+- ✅ Gestión completa de cooperativa de agua potable
+- ✅ Buffer de mensajes (agrupa mensajes rápidos)
 - ✅ Historial de conversación por usuario
 - ✅ Manejo de errores robusto
-- ✅ Logging de mensajes
-- ✅ Fácil de configurar y desplegar
+- ✅ Límite de caracteres para WhatsApp
 
 ## 🔄 Personalizar el Chatbot
 
@@ -194,7 +213,9 @@ Cambia este mensaje para darle una personalidad diferente, como:
 
 - El historial de conversaciones se guarda en memoria (se pierde al reiniciar el servidor)
 - Para producción, considera usar una base de datos (MongoDB, PostgreSQL, etc.)
-- Twilio y OpenAI tienen costos por uso
+- Groq AI es GRATUITO (sin necesidad de tarjeta de crédito)
+- Neon PostgreSQL tiene plan gratuito generoso
+- Render.com tiene plan gratuito (con auto-sleep después de 15 min inactividad)
 - El sandbox de WhatsApp de Twilio tiene limitaciones (solo números pre-autorizados)
 - Para producción, necesitas una cuenta de WhatsApp Business aprobada
 
@@ -209,15 +230,22 @@ Cambia este mensaje para darle una personalidad diferente, como:
 - Verifica que `TWILIO_ACCOUNT_SID` y `TWILIO_AUTH_TOKEN` sean correctos
 - Asegúrate de no tener espacios extras en el archivo `.env`
 
-**Error de OpenAI:**
+**Error de Groq AI:**
 - Verifica que tu API Key sea válida
-- Confirma que tengas créditos disponibles en tu cuenta de OpenAI
-- Revisa que la API Key tenga los permisos necesarios
+- Confirma que la copiaste correctamente (sin espacios)
+- Groq es gratuito, no requiere créditos
+
+**Error de Base de Datos:**
+- Verifica que la URL de conexión sea correcta
+- Confirma que ejecutaste `setup_database.js` y `add_horarios.js`
+- Revisa que la base de datos esté accesible desde internet
 
 ## 📚 Recursos
 
 - [Documentación de Twilio WhatsApp](https://www.twilio.com/docs/whatsapp)
-- [Documentación de OpenAI](https://platform.openai.com/docs)
+- [Documentación de Groq AI](https://console.groq.com/docs)
+- [Neon PostgreSQL](https://neon.tech/docs)
+- [Render.com Deploy](https://render.com/docs)
 - [Express.js](https://expressjs.com/)
 - [ngrok](https://ngrok.com/docs)
 
