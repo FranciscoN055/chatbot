@@ -1,0 +1,29 @@
+{
+  "name": "whatsapp-chatbot-ia",
+  "version": "1.0.0",
+  "description": "Chatbot de WhatsApp con IA usando Twilio y OpenAI",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "whatsapp",
+    "chatbot",
+    "twilio",
+    "openai",
+    "ia"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "body-parser": "^1.20.2",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "groq-sdk": "^0.37.0",
+    "openai": "^4.20.0",
+    "pg": "^8.16.3",
+    "twilio": "^4.19.0"
+  }
+}
