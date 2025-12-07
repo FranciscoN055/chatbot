@@ -1,13 +1,14 @@
-# 🤖 Chatbot de WhatsApp con IA
+# 🤖 Chatbot de WhatsApp con IA para Cooperativa de Agua Potable
 
-Un chatbot inteligente para WhatsApp que utiliza Twilio para la mensajería y OpenAI para generar respuestas con inteligencia artificial.
+Un chatbot inteligente para WhatsApp que utiliza Twilio para mensajería, Groq AI (gratuito) para inteligencia artificial, y PostgreSQL para gestionar datos de socios, medidores, facturas y pagos de una cooperativa de agua potable.
 
 ## 📋 Requisitos Previos
 
 - Node.js (versión 14 o superior)
 - Una cuenta de Twilio con WhatsApp habilitado
-- Una API Key de OpenAI
-- ngrok o un servidor con IP pública (para recibir webhooks)
+- Una API Key de Groq (gratuita, sin tarjeta de crédito)
+- Base de datos PostgreSQL (recomendado: Neon.tech gratis)
+- Railway.app o Render.com para deploy en producción (gratis)
 
 ## 🚀 Instalación
 
@@ -87,14 +88,51 @@ ngrok http 3000
 5. **Configurar en Twilio:**
    - Pega esta URL en la configuración de WhatsApp Sandbox de Twilio
 
-### Opción 2: Desplegar en la nube
+### Opción 2: Desplegar en Render.com (Producción - Gratis)
 
-Puedes desplegar en servicios como:
-- Heroku
-- Railway
-- Render
-- DigitalOcean
-- AWS/Azure/GCP
+1. **Crear cuenta en Render.com:**
+   - Ve a [render.com](https://render.com) y crea una cuenta gratuita
+
+2. **Conectar tu repositorio:**
+   - Click en "New +" → "Web Service"
+   - Conecta tu cuenta de GitHub
+   - Selecciona el repositorio `FranciscoN055/chatbot`
+
+3. **Configurar el servicio:**
+   - **Name:** `chatbot-whatsapp` (o el nombre que prefieras)
+   - **Environment:** `Node`
+   - **Build Command:** `npm install`
+   - **Start Command:** `npm start`
+   - **Plan:** Free
+
+4. **Agregar variables de entorno:**
+   - Click en "Advanced" → "Add Environment Variable"
+   - Agrega cada variable de tu `.env`:
+     ```
+     TWILIO_ACCOUNT_SID=tu_account_sid_de_twilio
+     TWILIO_AUTH_TOKEN=tu_auth_token_de_twilio
+     TWILIO_WHATSAPP_NUMBER=whatsapp:+14155238886
+     GROQ_API_KEY=tu_groq_api_key
+     DATABASE_URL=tu_postgresql_url_de_neon
+     PORT=3000
+     ```
+
+5. **Deploy:**
+   - Click en "Create Web Service"
+   - Render automáticamente construirá y desplegará tu app
+   - Te dará una URL como: `https://chatbot-whatsapp-xxxx.onrender.com`
+
+6. **Configurar Webhook en Twilio:**
+   - Ve a [Twilio Console](https://console.twilio.com/us1/develop/sms/try-it-out/whatsapp-learn)
+   - En "When a message comes in", pon: `https://tu-app.onrender.com/webhook`
+   - Método: `POST`
+   - Guarda los cambios
+
+**⚠️ Nota importante de Render.com (plan gratuito):**
+- El servicio se "duerme" después de 15 minutos de inactividad
+- El primer mensaje puede tardar 30-60 segundos en responder (mientras "despierta")
+- Después funciona normal
+- Se reinicia automáticamente cada mes
 
 ## ▶️ Ejecutar el Proyecto
 
