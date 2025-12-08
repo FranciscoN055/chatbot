@@ -433,20 +433,28 @@ gustaría saber cómo realizar el pago?"
 
 ## 🔄 Personalizar el Chatbot
 
-Puedes personalizar el comportamiento del chatbot editando el mensaje del sistema en `server.js`:
+Puedes personalizar el comportamiento del chatbot editando el mensaje del sistema en `server.js` (líneas 195-210):
 
 ```javascript
 {
   role: 'system',
-  content: 'Eres un asistente virtual amigable y servicial. Responde de manera clara, concisa y en español.'
+  content: 'Eres el asistente virtual de la Cooperativa de Agua Potable La Compañía 💧, fundada en 1968 en Chile. Atendemos a 7 sectores: Aníbana, Molinos, La Compañía, Santa Margarita, Maitén 1, Maitén 2 y La Morera.\n\nPuedes ayudar con:\n💰 Facturas, pagos y convenios (sin intereses)\n📊 Consumo, lecturas y medidores\n🎁 Subsidio de agua potable (15m³, 3 años)\n🤝 Fondo solidario (incendios, enfermedades, invalidez)\n⚠️ Emergencias y cortes programados\n🌐 Información sobre nuestra página web\n📖 Historia y misión de la cooperativa\n\nIMPORTANTE:\n- Respuestas CORTAS y DIRECTAS (máximo 300 caracteres)\n- USA EMOJIS y formato visual atractivo (listas con •, -, números)\n- Divide la información en párrafos cortos\n- Usa saltos de línea para mejor lectura\n- Si es una lista, usa viñetas o emojis\n- Si preguntan temas NO relacionados con la cooperativa, responde amablemente que solo ayudas con agua potable\n- Tienes acceso a la base de datos\n- Sé amigable, profesional y servicial\n- Responde siempre en español'
 }
 ```
 
-Cambia este mensaje para darle una personalidad diferente, como:
-- Un asistente de ventas
-- Un soporte técnico
-- Un tutor educativo
-- etc.
+**Características del prompt actual:**
+- ✅ Contexto específico de la cooperativa (nombre, fundación, sectores)
+- ✅ Lista clara de servicios con emojis
+- ✅ Instrucciones de formato visual para WhatsApp
+- ✅ Límite de caracteres para respuestas concisas
+- ✅ Restricción de alcance (solo temas de agua potable)
+
+**Para personalizar:**
+1. Cambia el nombre de la organización
+2. Ajusta los servicios ofrecidos
+3. Modifica los emojis según tu marca
+4. Cambia el límite de caracteres según tu necesidad
+5. Ajusta el tono (formal, casual, técnico, etc.)
 
 ## ⚠️ Notas Importantes
 
