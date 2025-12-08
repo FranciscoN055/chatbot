@@ -168,7 +168,7 @@ async function processMessages(fromNumber, toNumber) {
     console.log(`📱 Procesando ${messages.length} mensaje(s) de ${fromNumber}: ${incomingMessage}`);
 
     // Detectar si necesita consultar la base de datos
-    const needsDatabase = /\b(buscar|consultar|mostrar|listar|cuánto|cuánta|cuántos|cuántas|dame|ver|datos|información|registro|tabla|usuario|producto|precio|stock|inventario|cliente|pedido|venta|socio|factura|pago|medidor|lectura|consumo|tarifa|horario|atención|atienden|teléfono|telefono|correo|email|dirección|direccion|contacto|oficina|ubicación|ubicacion|subsidio|convenio|sector|sectores|emergencia|corte|cloro|historia|fuga|fugas|respaldo|queja|quejas|reclamo|reclamos)\b/i.test(incomingMessage);
+    const needsDatabase = /\b(buscar|consultar|mostrar|listar|cuánto|cuánta|cuántos|cuántas|dame|ver|datos|información|registro|tabla|usuario|producto|precio|stock|inventario|cliente|pedido|venta|socio|factura|pago|medidor|lectura|consumo|tarifa|horario|atención|atienden|teléfono|telefono|correo|email|dirección|direccion|contacto|oficina|ubicación|ubicacion|subsidio|convenio|sector|sectores|emergencia|corte|cloro|historia|fuga|fugas|respaldo|queja|quejas|reclamo|reclamos|página|pagina|web|sitio|link|url)\b/i.test(incomingMessage);
 
     let aiResponse = '';
     let dbContext = '';
