@@ -12,10 +12,16 @@ const PORT = process.env.PORT || 3000;
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-// Inicializar Twilio
+// Inicializar Twilio con configuración optimizada
 const twilioClient = twilio(
   process.env.TWILIO_ACCOUNT_SID,
-  process.env.TWILIO_AUTH_TOKEN
+  process.env.TWILIO_AUTH_TOKEN,
+  {
+    lazyLoading: true,
+    httpClient: {
+      timeout: 8000 // Timeout de 8 segundos
+    }
+  }
 );
 
 // Inicializar Groq
@@ -322,43 +328,35 @@ async function processMessages(fromNumber, toNumber) {
     const totalTime = ((Date.now() - startTime) / 1000).toFixed(2);
     console.log(`🤖 Respuesta generada en ${totalTime}s: ${aiResponse}`);
 
-    // Enviar respuesta por WhatsApp usando Twilio (con reintentos)
+    // Enviar respuesta por WhatsApp usando Twilio de forma ASÍNCRONA (sin esperar)
     const twilioStartTime = Date.now();
-    console.log('📤 Enviando mensaje a Twilio...');
+    console.log('📤 Enviando mensaje a Twilio (async)...');
     
-    let message;
-    let retries = 3;
-    let lastError;
+    // Enviar sin bloquear - no esperamos la respuesta
+    twilioClient.messages.create({
+      body: aiResponse,
+      from: toNumber,
+      to: fromNumber
+    }).then(message => {
+      const twilioTime = ((Date.now() - twilioStartTime) / 1000).toFixed(2);
+      console.log(`✅ Mensaje entregado a Twilio en ${twilioTime}s - SID: ${message.sid}`);
+    }).catch(error => {
+      console.error('❌ Error enviando a Twilio:', error.message);
+      // Reintento único si falla
+      console.log('🔄 Reintentando envío...');
+      return twilioClient.messages.create({
+        body: aiResponse,
+        from: toNumber,
+        to: fromNumber
+      }).then(msg => {
+        console.log('✅ Reintento exitoso - SID:', msg.sid);
+      });
+    }).catch(finalError => {
+      console.error('❌ Error final en Twilio:', finalError.message);
+    });
     
-    for (let i = 0; i < retries; i++) {
-      try {
-        message = await Promise.race([
-          twilioClient.messages.create({
-            body: aiResponse,
-            from: toNumber,
-            to: fromNumber
-          }),
-          new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Timeout de Twilio')), 10000)
-          )
-        ]);
-        break; // Éxito, salir del loop
-      } catch (error) {
-        lastError = error;
-        console.warn(`⚠️ Intento ${i + 1}/${retries} falló:`, error.message);
-        if (i < retries - 1) {
-          await new Promise(resolve => setTimeout(resolve, 1000)); // Esperar 1s antes de reintentar
-        }
-      }
-    }
-    
-    if (!message) {
-      throw new Error(`Twilio falló después de ${retries} intentos: ${lastError?.message}`);
-    }
-    
-    const twilioTime = ((Date.now() - twilioStartTime) / 1000).toFixed(2);
-    const totalProcessTime = ((Date.now() - startTime) / 1000).toFixed(2);
-    console.log(`✅ Mensaje enviado a Twilio en ${twilioTime}s (Total: ${totalProcessTime}s) - SID: ${message.sid}`);
+    // Registrar tiempo total de procesamiento (sin esperar Twilio)
+    console.log(`⚡ Respuesta procesada en ${totalTime}s (Twilio enviando en background)`);
 
   } catch (error) {
     console.error('❌ Error procesando mensaje:', error);
