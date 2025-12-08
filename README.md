@@ -12,12 +12,17 @@ Un chatbot inteligente para WhatsApp que utiliza Twilio para mensajería, Groq A
 
 ### 📊 Base de Datos Inteligente
 - **Consultas en lenguaje natural:** Pregunta en español y el chatbot genera automáticamente las consultas SQL
-- **Datos disponibles:**
+- **Datos operativos:**
   - Información de socios
-  - Medidores y lecturas
+  - Medidores y lecturas de consumo
   - Facturas y pagos
   - Tarifas de consumo
-  - Horarios de atención y contacto
+- **Información de la cooperativa:**
+  - Sectores operativos y cobertura
+  - Tiempos de atención de emergencias
+  - Subsidios y convenios de pago
+  - Procedimientos operativos (fugas, cortes, cloro)
+  - Historia y contacto
 
 ### ⚡ Sistema de Buffer de Mensajes
 - **Espera de 3 segundos:** Si el usuario envía varios mensajes seguidos, el chatbot espera 3 segundos para agruparlos
