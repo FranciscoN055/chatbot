@@ -38,7 +38,7 @@ Un chatbot inteligente para WhatsApp que utiliza Twilio para mensajería, Groq A
 - **Historial reducido:** Solo mantiene últimos 6 mensajes para procesamiento más rápido
 
 ### ⚡ Sistema de Buffer de Mensajes
-- **Espera de 2 segundos:** Si el usuario envía varios mensajes seguidos, el chatbot espera 2 segundos para agruparlos
+- **Espera de 3 segundos:** Si el usuario envía varios mensajes seguidos, el chatbot espera 3 segundos para agruparlos
 - **Respuesta única:** En lugar de generar múltiples respuestas, consolida todos los mensajes en una sola respuesta coherente
 - **Mejor experiencia:** Evita spam de respuestas cuando el usuario escribe en varios mensajes
 
@@ -76,7 +76,7 @@ Un chatbot inteligente para WhatsApp que utiliza Twilio para mensajería, Groq A
                              ▼
                   ┌──────────────────────┐
                   │  SISTEMA DE BUFFER   │
-                  │  Espera 2 segundos   │
+                  │  Espera 3 segundos   │
                   │  Agrupa mensajes     │
                   └──────────┬───────────┘
                              │
@@ -145,11 +145,11 @@ Un chatbot inteligente para WhatsApp que utiliza Twilio para mensajería, Groq A
 ### Ejemplo de Flujo Real:
 
 **Usuario escribe rápidamente:**
-1. "Hola" → Buffer inicia temporizador de 2s
+1. "Hola" → Buffer inicia temporizador de 3s
 2. "Soy el socio 001" → Buffer reinicia temporizador
 3. "¿Cuánto debo?" → Buffer reinicia temporizador
 
-**Después de 2 segundos sin nuevos mensajes:**
+**Después de 3 segundos sin nuevos mensajes:**
 - Agrupa: "Hola Soy el socio 001 ¿Cuánto debo?"
 - Detecta keyword: "socio", "debo" → Necesita BD
 - Groq genera: `SELECT * FROM socios WHERE numero_socio = '001'`

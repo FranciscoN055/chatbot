@@ -159,7 +159,7 @@ const conversationHistory = new Map();
 // Sistema de agrupación de mensajes
 const messageBuffer = new Map();
 const messageTimers = new Map();
-const MESSAGE_WAIT_TIME = 2000; // 2 segundos de espera (optimizado)
+const MESSAGE_WAIT_TIME = 3000; // 3 segundos de espera
 
 // Endpoint principal para recibir mensajes de WhatsApp
 app.post('/webhook', async (req, res) => {
