@@ -213,24 +213,65 @@ async function processMessages(fromNumber, toNumber) {
     const incomingMessage = messages.join(' ');
     console.log(`📱 Procesando ${messages.length} mensaje(s) de ${fromNumber}: ${incomingMessage}`);
 
-    // Detectar si necesita consultar la base de datos
-    const needsDatabase = /\b(buscar|consultar|mostrar|listar|cuánto|cuánta|cuántos|cuántas|dame|ver|datos|información|registro|tabla|usuario|producto|precio|stock|inventario|cliente|pedido|venta|socio|factura|pago|medidor|lectura|consumo|tarifa|horario|horarios|atención|atencion|atienden|abierto|abren|cierran|teléfono|telefono|correo|email|dirección|direccion|contacto|oficina|ubicación|ubicacion|subsidio|convenio|sector|sectores|emergencia|corte|cloro|historia|fuga|fugas|respaldo|queja|quejas|reclamo|reclamos|página|pagina|web|sitio|link|url)\b/i.test(incomingMessage);
-
     let aiResponse = '';
     let dbContext = '';
 
-    // Si necesita datos, consultar la base de datos
-    if (needsDatabase) {
-      console.log('🔍 Consultando base de datos...');
-      const dbResult = await queryDatabaseWithAI(incomingMessage);
+    // Consultas rápidas directas (sin usar IA para generar SQL)
+    const messageLower = incomingMessage.toLowerCase();
+    let quickQuery = null;
+    
+    if (/horario|atencion|atienden|abierto|abren|cierran/i.test(messageLower)) {
+      quickQuery = "SELECT valor FROM configuracion WHERE clave = 'horario_atencion'";
+    } else if (/telefono|teléfono|llamar|contacto.*telefono/i.test(messageLower)) {
+      quickQuery = "SELECT valor FROM configuracion WHERE clave = 'telefono'";
+    } else if (/email|correo|mail/i.test(messageLower)) {
+      quickQuery = "SELECT valor FROM configuracion WHERE clave = 'email'";
+    } else if (/direccion|dirección|ubicacion|ubicación|donde.*quedan|donde.*estan/i.test(messageLower)) {
+      quickQuery = "SELECT valor FROM configuracion WHERE clave = 'direccion'";
+    } else if (/pagina|página|web|sitio|link|url/i.test(messageLower)) {
+      quickQuery = "SELECT valor FROM configuracion WHERE clave = 'pagina_web'";
+    } else if (/sector|sectores/i.test(messageLower)) {
+      quickQuery = "SELECT valor FROM configuracion WHERE clave = 'sectores'";
+    } else if (/subsidio/i.test(messageLower)) {
+      quickQuery = "SELECT clave, valor FROM configuracion WHERE clave LIKE '%subsidio%' LIMIT 5";
+    } else if (/fondo.*solidario|solidario/i.test(messageLower)) {
+      quickQuery = "SELECT clave, valor FROM configuracion WHERE clave LIKE '%fondo_solidario%' LIMIT 5";
+    } else if (/historia|fundacion|fundación/i.test(messageLower)) {
+      quickQuery = "SELECT valor FROM configuracion WHERE clave = 'historia_completa'";
+    } else if (/mision|misión|vision|visión/i.test(messageLower)) {
+      quickQuery = "SELECT clave, valor FROM configuracion WHERE clave IN ('mision', 'vision')";
+    } else if (/emergencia|corte|fuga/i.test(messageLower)) {
+      quickQuery = "SELECT clave, valor FROM configuracion WHERE clave LIKE '%emergencia%' OR clave LIKE '%corte%' OR clave LIKE '%fuga%' LIMIT 5";
+    } else if (/convenio|pago|interes|interés/i.test(messageLower)) {
+      quickQuery = "SELECT clave, valor FROM configuracion WHERE clave LIKE '%convenio%' OR clave LIKE '%interes%' LIMIT 3";
+    }
+
+    // Si hay consulta rápida, ejecutarla directamente
+    if (quickQuery) {
+      console.log('⚡ Consulta rápida directa:', quickQuery);
+      try {
+        const dbResult = await pool.query(quickQuery);
+        if (dbResult.rows.length > 0) {
+          dbContext = `\n\nDatos de la base de datos:\n${JSON.stringify(dbResult.rows, null, 2)}\n\nUsa estos datos para responder.`;
+          console.log('✅ Datos encontrados:', dbResult.rows.length, 'registros');
+        }
+      } catch (error) {
+        console.error('❌ Error en consulta rápida:', error.message);
+      }
+    } else {
+      // Para consultas complejas, usar IA (más lento pero necesario)
+      const needsComplexQuery = /\b(buscar|consultar|mostrar|listar|cuánto|cuánta|cuántos|cuántas|dame|ver|socio|factura|pago|medidor|lectura|consumo|tarifa)\b/i.test(incomingMessage);
       
-      if (dbResult.success && dbResult.data.length > 0) {
-        dbContext = `\n\nDatos obtenidos de la base de datos:\n${JSON.stringify(dbResult.data, null, 2)}\n\nUsa estos datos para responder al usuario de forma clara y amigable.`;
-        console.log('✅ Datos encontrados:', dbResult.data.length, 'registros');
-      } else if (dbResult.success && dbResult.data.length === 0) {
-        dbContext = '\n\nNo se encontraron datos en la base de datos para esta consulta.';
-      } else {
-        dbContext = `\n\nNo pude consultar la base de datos: ${dbResult.error}`;
+      if (needsComplexQuery) {
+        console.log('🔍 Consulta compleja, usando IA para generar SQL...');
+        const dbResult = await queryDatabaseWithAI(incomingMessage);
+        
+        if (dbResult.success && dbResult.data.length > 0) {
+          dbContext = `\n\nDatos obtenidos:\n${JSON.stringify(dbResult.data, null, 2)}\n\nUsa estos datos para responder.`;
+          console.log('✅ Datos encontrados:', dbResult.data.length, 'registros');
+        } else if (dbResult.success && dbResult.data.length === 0) {
+          dbContext = '\n\nNo se encontraron datos para esta consulta.';
+        }
       }
     }
 
@@ -239,7 +280,7 @@ async function processMessages(fromNumber, toNumber) {
       conversationHistory.set(fromNumber, [
         {
           role: 'system',
-          content: 'Eres el asistente virtual de la Cooperativa de Agua Potable La Compañía 💧, fundada en 1968 en Chile. Atendemos a 7 sectores: Aníbana, Molinos, La Compañía, Santa Margarita, Maitén 1, Maitén 2 y La Morera.\n\nPuedes ayudar con:\n💰 Facturas, pagos y convenios (sin intereses)\n📊 Consumo, lecturas y medidores\n🎁 Subsidio de agua potable (15m³, 3 años)\n🤝 Fondo solidario (incendios, enfermedades, invalidez)\n⚠️ Emergencias y cortes programados\n🌐 Información sobre nuestra página web\n📖 Historia y misión de la cooperativa\n\nIMPORTANTE:\n- Respuestas CORTAS y DIRECTAS (máximo 300 caracteres)\n- USA EMOJIS y formato visual atractivo (listas con •, -, números)\n- Divide la información en párrafos cortos\n- Usa saltos de línea para mejor lectura\n- Si es una lista, usa viñetas o emojis\n- Si preguntan temas NO relacionados con la cooperativa, responde amablemente que solo ayudas con agua potable\n- Tienes acceso a la base de datos\n- Sé amigable, profesional y servicial\n- Responde siempre en español'
+          content: 'Asistente de Cooperativa La Compañía 💧 (7 sectores: Aníbana, Molinos, La Compañía, Sta. Margarita, Maitén 1 y 2, La Morera).\n\nAyudo con: 💰 Facturas/pagos 📊 Consumo 🎁 Subsidio(15m³,3años) 🤝 Fondo solidario ⚠️ Emergencias 🌐 Web 📖 Historia\n\nRespuestas CORTAS (max 250 chars), usa emojis, listas con •/-, saltos de línea. Solo temas de agua potable. Amigable y directo en español.'
         }
       ]);
     }
