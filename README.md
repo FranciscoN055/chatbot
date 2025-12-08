@@ -29,18 +29,25 @@ Un chatbot inteligente para WhatsApp que utiliza Twilio para mensajería, Groq A
   - Historia, misión y visión institucional
   - Canales de contacto
 
+### ⚡ Optimizaciones de Velocidad
+- **Cache de esquema de BD:** Carga la estructura de la base de datos al inicio (ahorro ~2s por consulta)
+- **Consultas SQL directas:** Para preguntas comunes (horarios, teléfono, subsidio, etc.) usa SQL predefinido sin llamar a IA (ahorro ~10-15s)
+- **Tokens optimizados:** Respuestas limitadas a 200 tokens para generación más rápida
+- **Historial reducido:** Solo mantiene últimos 6 mensajes para procesamiento más rápido
+
 ### ⚡ Sistema de Buffer de Mensajes
-- **Espera de 3 segundos:** Si el usuario envía varios mensajes seguidos, el chatbot espera 3 segundos para agruparlos
+- **Espera de 2 segundos:** Si el usuario envía varios mensajes seguidos, el chatbot espera 2 segundos para agruparlos
 - **Respuesta única:** En lugar de generar múltiples respuestas, consolida todos los mensajes en una sola respuesta coherente
 - **Mejor experiencia:** Evita spam de respuestas cuando el usuario escribe en varios mensajes
 
 ### 💬 Historial de Conversación
 - Mantiene contexto de la conversación por cada usuario
-- Recuerda mensajes anteriores durante la sesión
+- Últimos 6 mensajes en memoria (optimizado)
 - Se reinicia al reiniciar el servidor
 
 ### 📏 Límite de Respuestas
 - Respuestas optimizadas para WhatsApp (máximo 1500 caracteres)
+- Generación limitada a 200 tokens para velocidad
 - Evita errores de mensajes demasiado largos
 
 ## 📊 Diagrama de Flujo
@@ -67,56 +74,56 @@ Un chatbot inteligente para WhatsApp que utiliza Twilio para mensajería, Groq A
                              ▼
                   ┌──────────────────────┐
                   │  SISTEMA DE BUFFER   │
-                  │  Espera 3 segundos   │
+                  │  Espera 2 segundos   │
                   │  Agrupa mensajes     │
                   └──────────┬───────────┘
                              │
                              │ Mensaje(s) agrupado(s)
                              ▼
-                  ┌──────────────────────┐
-                  │ DETECCIÓN KEYWORDS   │
-                  │ ¿Necesita consultar  │
-                  │ base de datos?       │
-                  └──────┬───────┬───────┘
-                         │       │
-                    SÍ   │       │   NO
-                         │       │
-         ┌───────────────┘       └──────────────┐
-         ▼                                      ▼
-┌────────────────────┐              ┌─────────────────────┐
-│  GROQ AI (Paso 1)  │              │   GROQ AI (Directo) │
-│  Genera SQL desde  │              │   Responde con      │
-│  lenguaje natural  │              │   contexto general  │
-└─────────┬──────────┘              └──────────┬──────────┘
-          │                                    │
-          │ Query SQL                          │
-          ▼                                    │
-┌────────────────────┐                        │
-│    POSTGRESQL      │                        │
-│   (Neon Database)  │                        │
-│  Ejecuta consulta  │                        │
-└─────────┬──────────┘                        │
-          │                                    │
-          │ Resultados                         │
-          │                                    │
-          └────────────┬───────────────────────┘
-                       │
-                       │ Datos + Mensaje del usuario
-                       ▼
-            ┌──────────────────────┐
-            │   GROQ AI (Paso 2)   │
-            │  llama-3.3-70b       │
-            │  Formula respuesta   │
-            │  con datos reales    │
-            └──────────┬───────────┘
-                       │
-                       │ Respuesta (max 1500 chars)
-                       ▼
-            ┌──────────────────────┐
-            │  HISTORIAL GUARDADO  │
-            │  En memoria (Map)    │
-            │  Por cada usuario    │
-            └──────────┬───────────┘
+                  ┌──────────────────────────────────────┐
+                  │    DETECCIÓN INTELIGENTE DE QUERY    │
+                  │  ¿Es pregunta común o compleja?      │
+                  └──┬───────────────┬───────────────┬───┘
+                     │               │               │
+              COMÚN  │        COMPLEJA│          OTRO│
+              (Rápido)       (IA SQL)             (IA)
+                     │               │               │
+         ┌───────────▼─────┐    ┌────▼──────┐      │
+         │ SQL DIRECTO ⚡  │    │ GROQ AI   │      │
+         │ (sin usar IA)   │    │ Genera SQL│      │
+         │ Horarios,tel,   │    │ complejo  │      │
+         │ subsidio,etc.   │    └────┬──────┘      │
+         └───────────┬─────┘         │             │
+                     │               │             │
+                     │ Query SQL     │             │
+                     ▼               ▼             │
+         ┌────────────────────────────┐            │
+         │      POSTGRESQL 💾         │            │
+         │    (Neon Database)         │            │
+         │  ✅ Esquema en cache       │            │
+         │  ✅ Consulta instantánea   │            │
+         └────────────┬───────────────┘            │
+                      │                            │
+                      │ Resultados                 │
+                      │                            │
+                      └────────────┬───────────────┘
+                                   │
+                                   │ Datos + Mensaje
+                                   ▼
+                        ┌──────────────────────┐
+                        │   GROQ AI (Final)    │
+                        │  llama-3.3-70b       │
+                        │  Genera respuesta    │
+                        │  (max 200 tokens)    │
+                        └──────────┬───────────┘
+                                   │
+                                   │ Respuesta (max 1500 chars)
+                                   ▼
+                        ┌──────────────────────┐
+                        │  HISTORIAL GUARDADO  │
+                        │  En memoria (Map)    │
+                        │  Últimos 6 mensajes  │
+                        └──────────┬───────────┘
                        │
                        │ Respuesta final
                        ▼
@@ -136,11 +143,11 @@ Un chatbot inteligente para WhatsApp que utiliza Twilio para mensajería, Groq A
 ### Ejemplo de Flujo Real:
 
 **Usuario escribe rápidamente:**
-1. "Hola" → Buffer inicia temporizador de 3s
+1. "Hola" → Buffer inicia temporizador de 2s
 2. "Soy el socio 001" → Buffer reinicia temporizador
 3. "¿Cuánto debo?" → Buffer reinicia temporizador
 
-**Después de 3 segundos sin nuevos mensajes:**
+**Después de 2 segundos sin nuevos mensajes:**
 - Agrupa: "Hola Soy el socio 001 ¿Cuánto debo?"
 - Detecta keyword: "socio", "debo" → Necesita BD
 - Groq genera: `SELECT * FROM socios WHERE numero_socio = '001'`
