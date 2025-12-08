@@ -89,6 +89,37 @@ PORT=3000
    - En "When a message comes in", ingresa la URL de tu webhook
    - Si estás en desarrollo local, usa ngrok (ver sección abajo)
 
+### 📱 Alternativa: WhatsApp Business API (Producción - De Pago)
+
+El **Twilio Sandbox es gratuito** pero tiene limitaciones (usuarios deben enviar código "join" para registrarse, no puedes personalizar foto/nombre del bot). Para producción profesional:
+
+**WhatsApp Business API ofrece:**
+- ✅ Tu propio número de WhatsApp dedicado
+- ✅ Foto de perfil y nombre personalizable
+- ✅ Usuarios NO necesitan enviar código de registro
+- ✅ Sin límite de usuarios
+- ✅ Mensajes iniciados por el negocio (con plantillas aprobadas)
+
+**Requisitos:**
+- Número de teléfono dedicado (NO puede estar registrado en WhatsApp personal)
+- Facebook Business Manager verificado
+- Aprobación de Meta (1-7 días)
+
+**Costos aproximados (Twilio):**
+- ~$0.005 - $0.012 USD por mensaje (varía por país)
+- Número virtual: ~$1-2 USD/mes
+
+**Cómo activar:**
+1. Ve a [Twilio WhatsApp](https://www.twilio.com/whatsapp)
+2. Click en "Request Access" para WhatsApp Business
+3. Sigue el proceso de verificación
+4. Una vez aprobado, tu código actual funciona igual, solo cambias las credenciales
+
+**Alternativas a Twilio:**
+- [Meta Cloud API](https://developers.facebook.com/products/whatsapp/) - 1,000 conversaciones gratis/mes
+- [360dialog](https://www.360dialog.com/) - Más económico en algunos países
+- [Vonage](https://www.vonage.com/communications-apis/messages/) - Alternativa global
+
 ## 🔑 Configuración de Groq AI (Gratuito)
 
 1. Ve a [Groq Console](https://console.groq.com/keys)
