@@ -2,6 +2,37 @@
 
 Un chatbot inteligente para WhatsApp que utiliza Twilio para mensajería, Groq AI (gratuito) para inteligencia artificial, y PostgreSQL para gestionar datos de socios, medidores, facturas y pagos de una cooperativa de agua potable.
 
+## ✨ Características Principales
+
+### 🤖 Inteligencia Artificial
+- **Modelo:** Groq llama-3.3-70b-versatile (gratuito, sin tarjeta de crédito)
+- **Idioma:** Respuestas en español
+- **Contexto:** Especializado en servicios de cooperativa de agua potable
+- **Restricción:** Solo responde preguntas relacionadas con el agua potable
+
+### 📊 Base de Datos Inteligente
+- **Consultas en lenguaje natural:** Pregunta en español y el chatbot genera automáticamente las consultas SQL
+- **Datos disponibles:**
+  - Información de socios
+  - Medidores y lecturas
+  - Facturas y pagos
+  - Tarifas de consumo
+  - Horarios de atención y contacto
+
+### ⚡ Sistema de Buffer de Mensajes
+- **Espera de 3 segundos:** Si el usuario envía varios mensajes seguidos, el chatbot espera 3 segundos para agruparlos
+- **Respuesta única:** En lugar de generar múltiples respuestas, consolida todos los mensajes en una sola respuesta coherente
+- **Mejor experiencia:** Evita spam de respuestas cuando el usuario escribe en varios mensajes
+
+### 💬 Historial de Conversación
+- Mantiene contexto de la conversación por cada usuario
+- Recuerda mensajes anteriores durante la sesión
+- Se reinicia al reiniciar el servidor
+
+### 📏 Límite de Respuestas
+- Respuestas optimizadas para WhatsApp (máximo 1500 caracteres)
+- Evita errores de mensajes demasiado largos
+
 ## 📋 Requisitos Previos
 
 - Node.js (versión 14 o superior)
@@ -207,16 +238,50 @@ chatbot/
 └── README.md           # Este archivo
 ```
 
-## 💡 Características
+## 🔧 Cómo Funciona
 
-- ✅ Respuestas con IA usando Groq (llama-3.3-70b-versatile)
-- ✅ Consultas inteligentes a base de datos PostgreSQL
-- ✅ Generación automática de SQL desde lenguaje natural
-- ✅ Gestión completa de cooperativa de agua potable
-- ✅ Buffer de mensajes (agrupa mensajes rápidos)
-- ✅ Historial de conversación por usuario
-- ✅ Manejo de errores robusto
-- ✅ Límite de caracteres para WhatsApp
+### Flujo de Mensajes:
+
+1. **Usuario envía mensaje(s) por WhatsApp** 
+   - Puede enviar uno o varios mensajes seguidos
+
+2. **Sistema de buffer (3 segundos)**
+   - El chatbot espera 3 segundos después del último mensaje
+   - Agrupa todos los mensajes recibidos en ese período
+   - Ejemplo: Si escribes "Hola", "¿Cuánto debo?", "Soy el socio 001" → Se procesan juntos
+
+3. **Análisis del mensaje agrupado**
+   - Detecta si necesita consultar la base de datos
+   - Keywords: socio, medidor, factura, pago, consumo, horario, atención, etc.
+
+4. **Consulta a la base de datos (si es necesario)**
+   - Groq AI convierte la pregunta en lenguaje natural a SQL
+   - Ejecuta la consulta en PostgreSQL
+   - Obtiene datos reales
+
+5. **Generación de respuesta**
+   - Groq AI formula una respuesta clara y concisa
+   - Usa los datos de la BD si los consultó
+   - Mantiene el contexto de la conversación
+
+6. **Respuesta por WhatsApp**
+   - Envía una sola respuesta coherente
+   - Máximo 1500 caracteres para compatibilidad con WhatsApp
+
+### Ejemplo de Uso:
+
+```
+Usuario: "Hola"
+Usuario: "Soy el socio 001"
+Usuario: "¿Cuánto debo?"
+
+[Chatbot espera 3 segundos después del último mensaje]
+
+Chatbot: "¡Hola! Vi que eres el socio 001 - Juan Pérez. 
+Consultando tu cuenta... Tienes una factura pendiente 
+de $45.50 correspondiente al mes de noviembre. ¿Te 
+gustaría saber cómo realizar el pago?"
+```
 
 ## 🔄 Personalizar el Chatbot
 
