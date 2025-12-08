@@ -102,10 +102,11 @@ GUÍA DE CONSULTAS POR TIPO DE PREGUNTA:
 - Misión/visión → SELECT clave, valor FROM configuracion WHERE clave IN ('mision', 'vision')
 
 💰 DATOS OPERACIONALES:
+- Deuda de un socio → SELECT * FROM facturas WHERE socio_id = X AND estado = 'pendiente'
 - Facturas de un socio → SELECT * FROM facturas WHERE socio_id = X
-- Pagos de un socio → SELECT * FROM pagos WHERE socio_id = X
-- Consumo/lecturas → SELECT * FROM lecturas WHERE medidor_id = X ORDER BY fecha DESC LIMIT 12
-- Tarifas → SELECT * FROM tarifas ORDER BY rango_min
+- Pagos de un socio → SELECT p.* FROM pagos p JOIN facturas f ON p.factura_id = f.id WHERE f.socio_id = X
+- Consumo/lecturas → SELECT * FROM lecturas WHERE medidor_id = X ORDER BY fecha_lectura DESC LIMIT 12
+- Tarifas → SELECT * FROM tarifas ORDER BY tramo_inicio
 
 👤 DATOS DE SOCIOS:
 - Buscar socio → SELECT * FROM socios WHERE rut = 'X' OR nombre ILIKE '%X%'
@@ -117,6 +118,8 @@ REGLAS IMPORTANTES:
 3. Para búsquedas en "configuracion", usa LIKE '%palabra%' cuando no sepas la clave exacta
 4. Para fechas recientes, usa ORDER BY fecha DESC LIMIT X
 5. Para nombres, usa ILIKE '%nombre%' (case insensitive)
+6. Para calcular deudas, usa SELECT * FROM facturas WHERE estado = 'pendiente' (NO hagas SUM con LEFT JOIN a pagos)
+7. Mantén las consultas SIMPLES - evita JOIN innecesarios
 
 Pregunta del usuario: ${userQuestion}
 
@@ -244,6 +247,13 @@ async function processMessages(fromNumber, toNumber) {
       quickQuery = "SELECT clave, valor FROM configuracion WHERE clave LIKE '%emergencia%' OR clave LIKE '%corte%' OR clave LIKE '%fuga%' LIMIT 5";
     } else if (/convenio|pago|interes|interés/i.test(messageLower)) {
       quickQuery = "SELECT clave, valor FROM configuracion WHERE clave LIKE '%convenio%' OR clave LIKE '%interes%' LIMIT 3";
+    } else if (/(cuanto|cuánto).*(debo|debe|deuda|pendiente)|debo|deuda/i.test(messageLower)) {
+      // Detectar número de socio en el mensaje o en el historial
+      const socioMatch = incomingMessage.match(/socio\s+(\d+)/i);
+      if (socioMatch) {
+        const socioId = parseInt(socioMatch[1]);
+        quickQuery = `SELECT id, periodo, consumo_m3, total, fecha_vencimiento FROM facturas WHERE socio_id = ${socioId} AND estado = 'pendiente' ORDER BY fecha_emision DESC`;
+      }
     }
 
     // Si hay consulta rápida, ejecutarla directamente
