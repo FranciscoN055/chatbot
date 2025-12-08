@@ -31,37 +31,54 @@ const pool = new Pool({
   }
 });
 
-// Probar conexión a la base de datos
-pool.query('SELECT NOW()', (err, res) => {
+// Cache del esquema de la base de datos (optimización de velocidad)
+let cachedSchema = null;
+
+// Probar conexión y cargar esquema en cache
+pool.query('SELECT NOW()', async (err, res) => {
   if (err) {
     console.error('❌ Error conectando a la base de datos:', err);
   } else {
     console.log('✅ Conectado a PostgreSQL:', res.rows[0].now);
+    
+    // Cargar esquema en cache para respuestas más rápidas
+    try {
+      const schemaQuery = `
+        SELECT table_name, column_name, data_type 
+        FROM information_schema.columns 
+        WHERE table_schema = 'public'
+        ORDER BY table_name, ordinal_position;
+      `;
+      const schemaResult = await pool.query(schemaQuery);
+      
+      let schemaDescription = 'Esquema de la base de datos:\n';
+      let currentTable = '';
+      schemaResult.rows.forEach(row => {
+        if (row.table_name !== currentTable) {
+          currentTable = row.table_name;
+          schemaDescription += `\nTabla: ${row.table_name}\n`;
+        }
+        schemaDescription += `  - ${row.column_name} (${row.data_type})\n`;
+      });
+      
+      cachedSchema = schemaDescription;
+      console.log('✅ Esquema de BD cargado en cache para respuestas rápidas');
+    } catch (error) {
+      console.error('⚠️ Error cargando esquema:', error.message);
+    }
   }
 });
 
 // Función para consultar la base de datos con IA
 async function queryDatabaseWithAI(userQuestion) {
   try {
-    // Primero, obtener el esquema de las tablas
-    const schemaQuery = `
-      SELECT table_name, column_name, data_type 
-      FROM information_schema.columns 
-      WHERE table_schema = 'public'
-      ORDER BY table_name, ordinal_position;
-    `;
-    const schemaResult = await pool.query(schemaQuery);
+    // Usar esquema cacheado (ya cargado al inicio)
+    if (!cachedSchema) {
+      console.log('⚠️ Esquema no disponible, usando consultas básicas');
+      return { success: false, error: 'Esquema no disponible' };
+    }
     
-    // Construir descripción del esquema
-    let schemaDescription = 'Esquema de la base de datos:\n';
-    let currentTable = '';
-    schemaResult.rows.forEach(row => {
-      if (row.table_name !== currentTable) {
-        currentTable = row.table_name;
-        schemaDescription += `\nTabla: ${row.table_name}\n`;
-      }
-      schemaDescription += `  - ${row.column_name} (${row.data_type})\n`;
-    });
+    const schemaDescription = cachedSchema;
 
     // Pedir a la IA que genere una consulta SQL
     const sqlPrompt = `Eres un experto en PostgreSQL para una cooperativa de agua potable. Genera UNA SOLA consulta SQL válida para responder a la pregunta del usuario.
@@ -108,7 +125,7 @@ Consulta SQL:`;
     const sqlCompletion = await groq.chat.completions.create({
       model: 'llama-3.3-70b-versatile',
       messages: [{ role: 'user', content: sqlPrompt }],
-      max_tokens: 500,
+      max_tokens: 100,
       temperature: 0.1
     });
 
@@ -142,7 +159,7 @@ const conversationHistory = new Map();
 // Sistema de agrupación de mensajes
 const messageBuffer = new Map();
 const messageTimers = new Map();
-const MESSAGE_WAIT_TIME = 3000; // 3 segundos de espera
+const MESSAGE_WAIT_TIME = 2000; // 2 segundos de espera (optimizado)
 
 // Endpoint principal para recibir mensajes de WhatsApp
 app.post('/webhook', async (req, res) => {
@@ -182,6 +199,7 @@ app.post('/webhook', async (req, res) => {
 
 // Función para procesar mensajes agrupados
 async function processMessages(fromNumber, toNumber) {
+  const startTime = Date.now();
   try {
     // Obtener todos los mensajes acumulados
     const messages = messageBuffer.get(fromNumber) || [];
@@ -234,16 +252,16 @@ async function processMessages(fromNumber, toNumber) {
       content: incomingMessage + dbContext
     });
 
-    // Limitar historial a últimos 10 mensajes
-    if (history.length > 11) {
-      history.splice(1, history.length - 11);
+    // Limitar historial a últimos 6 mensajes (optimizado para velocidad)
+    if (history.length > 7) {
+      history.splice(1, history.length - 7);
     }
 
-    // Obtener respuesta de Groq
+    // Obtener respuesta de Groq (optimizado para velocidad)
     const completion = await groq.chat.completions.create({
       model: 'llama-3.3-70b-versatile',
       messages: history,
-      max_tokens: 300,
+      max_tokens: 200,
       temperature: 0.7
     });
 
@@ -260,7 +278,8 @@ async function processMessages(fromNumber, toNumber) {
       content: aiResponse
     });
 
-    console.log(`🤖 Respuesta enviada: ${aiResponse}`);
+    const totalTime = ((Date.now() - startTime) / 1000).toFixed(2);
+    console.log(`🤖 Respuesta enviada en ${totalTime}s: ${aiResponse}`);
 
     // Enviar respuesta por WhatsApp usando Twilio
     await twilioClient.messages.create({
