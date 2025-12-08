@@ -22,10 +22,12 @@ Un chatbot inteligente para WhatsApp que utiliza Twilio para mensajería, Groq A
   - Tarifas de consumo
 - **Información de la cooperativa:**
   - Sectores operativos y cobertura
+  - Subsidio de agua potable y fondo solidario
   - Tiempos de atención de emergencias
-  - Subsidios y convenios de pago
+  - Convenios de pago (sin intereses)
   - Procedimientos operativos (fugas, cortes, cloro)
-  - Historia y contacto
+  - Historia, misión y visión institucional
+  - Canales de contacto
 
 ### ⚡ Sistema de Buffer de Mensajes
 - **Espera de 3 segundos:** Si el usuario envía varios mensajes seguidos, el chatbot espera 3 segundos para agruparlos
