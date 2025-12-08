@@ -305,9 +305,9 @@ async function processMessages(fromNumber, toNumber) {
       content: incomingMessage + dbContext
     });
 
-    // Limitar historial a últimos 6 mensajes (optimizado para velocidad)
-    if (history.length > 7) {
-      history.splice(1, history.length - 7);
+    // Limitar historial a últimos 10 mensajes (optimizado para velocidad)
+    if (history.length > 11) {
+      history.splice(1, history.length - 11);
     }
 
     // Obtener respuesta de Groq (optimizado para velocidad)
