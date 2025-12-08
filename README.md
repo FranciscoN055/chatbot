@@ -2,6 +2,8 @@
 
 Un chatbot inteligente para WhatsApp que utiliza Twilio para mensajería, Groq AI (gratuito) para inteligencia artificial, y PostgreSQL para gestionar datos de socios, medidores, facturas y pagos de la Cooperativa de Agua Potable La Compañía.
 
+**Integrantes:** Sebastián Valbuena, Benjamin Maldonado, Ignacio Alvial, Francisco Noman y Francisco Urquejo.
+
 **Proyecto desarrollado para:** Trabajo universitario - Universidad San Sebastián  
 **Cliente:** [Cooperativa de Agua Potable La Compañía](https://www.cooplacia.cl/)
 
