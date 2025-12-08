@@ -254,6 +254,8 @@ async function processMessages(fromNumber, toNumber) {
         const socioId = parseInt(socioMatch[1]);
         quickQuery = `SELECT id, periodo, consumo_m3, total, fecha_vencimiento FROM facturas WHERE socio_id = ${socioId} AND estado = 'pendiente' ORDER BY fecha_emision DESC`;
       }
+    } else if (/(como|cómo).*(pagar|pago)|metodo.*pago|forma.*pago|donde.*pagar/i.test(messageLower)) {
+      quickQuery = "SELECT clave, valor FROM configuracion WHERE clave LIKE '%convenio_pago%' OR clave LIKE '%metodo%' OR clave = 'direccion' LIMIT 5";
     }
 
     // Si hay consulta rápida, ejecutarla directamente
@@ -290,7 +292,7 @@ async function processMessages(fromNumber, toNumber) {
       conversationHistory.set(fromNumber, [
         {
           role: 'system',
-          content: 'Asistente de Cooperativa La Compañía 💧 (7 sectores: Aníbana, Molinos, La Compañía, Sta. Margarita, Maitén 1 y 2, La Morera).\n\nAyudo con: 💰 Facturas/pagos 📊 Consumo 🎁 Subsidio(15m³,3años) 🤝 Fondo solidario ⚠️ Emergencias 🌐 Web 📖 Historia\n\nRespuestas CORTAS (max 250 chars), usa emojis, listas con •/-, saltos de línea. Solo temas de agua potable. Amigable y directo en español.'
+          content: 'Asistente de Cooperativa La Compañía 💧 (7 sectores: Aníbana, Molinos, La Compañía, Sta. Margarita, Maitén 1 y 2, La Morera).\n\nAyudo con: 💰 Facturas/pagos 📊 Consumo 🎁 Subsidio(13m³,3años) 🤝 Fondo solidario ⚠️ Emergencias 🌐 Web 📖 Historia\n\nRespuestas CORTAS (max 250 chars), usa emojis, listas con •/-, saltos de línea. Solo temas de agua potable. Amigable y directo en español.\n\n⚠️ IMPORTANTE: Si recibes MÚLTIPLES facturas pendientes, SUMA todos los totales para dar la deuda total.'
         }
       ]);
     }
