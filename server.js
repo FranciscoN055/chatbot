@@ -68,6 +68,11 @@ async function queryDatabaseWithAI(userQuestion) {
 
 ${schemaDescription}
 
+IMPORTANTE: 
+- La tabla "configuracion" contiene información general de la cooperativa con formato clave-valor
+- Para buscar información general (subsidios, sectores, emergencias, etc.), usa: SELECT * FROM configuracion WHERE clave LIKE '%palabra_clave%'
+- Para datos específicos de socios, medidores, facturas, etc., usa las tablas correspondientes
+
 Pregunta del usuario: ${userQuestion}
 
 Consulta SQL:`;
@@ -163,7 +168,7 @@ async function processMessages(fromNumber, toNumber) {
     console.log(`📱 Procesando ${messages.length} mensaje(s) de ${fromNumber}: ${incomingMessage}`);
 
     // Detectar si necesita consultar la base de datos
-    const needsDatabase = /\b(buscar|consultar|mostrar|listar|cuánto|cuánta|cuántos|cuántas|dame|ver|datos|información|registro|tabla|usuario|producto|precio|stock|inventario|cliente|pedido|venta|socio|factura|pago|medidor|lectura|consumo|tarifa|horario|atención|atienden|teléfono|telefono|correo|email|dirección|direccion|contacto|oficina|ubicación|ubicacion)\b/i.test(incomingMessage);
+    const needsDatabase = /\b(buscar|consultar|mostrar|listar|cuánto|cuánta|cuántos|cuántas|dame|ver|datos|información|registro|tabla|usuario|producto|precio|stock|inventario|cliente|pedido|venta|socio|factura|pago|medidor|lectura|consumo|tarifa|horario|atención|atienden|teléfono|telefono|correo|email|dirección|direccion|contacto|oficina|ubicación|ubicacion|subsidio|convenio|sector|sectores|emergencia|corte|cloro|historia|fuga|fugas|respaldo|queja|quejas|reclamo|reclamos)\b/i.test(incomingMessage);
 
     let aiResponse = '';
     let dbContext = '';
