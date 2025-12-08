@@ -35,7 +35,7 @@ Un chatbot inteligente para WhatsApp que utiliza Twilio para mensajería, Groq A
 - **Cache de esquema de BD:** Carga la estructura de la base de datos al inicio (ahorro ~2s por consulta)
 - **Consultas SQL directas:** Para preguntas comunes (horarios, teléfono, subsidio, etc.) usa SQL predefinido sin llamar a IA (ahorro ~10-15s)
 - **Tokens optimizados:** Respuestas limitadas a 200 tokens para generación más rápida
-- **Historial reducido:** Solo mantiene últimos 6 mensajes para procesamiento más rápido
+- **Historial reducido:** Solo mantiene últimos 10 mensajes para procesamiento más rápido
 
 ### ⚡ Sistema de Buffer de Mensajes
 - **Espera de 3 segundos:** Si el usuario envía varios mensajes seguidos, el chatbot espera 3 segundos para agruparlos
@@ -44,7 +44,7 @@ Un chatbot inteligente para WhatsApp que utiliza Twilio para mensajería, Groq A
 
 ### 💬 Historial de Conversación
 - Mantiene contexto de la conversación por cada usuario
-- Últimos 6 mensajes en memoria (optimizado)
+- Últimos 10 mensajes en memoria (optimizado)
 - Se reinicia al reiniciar el servidor
 
 ### 📏 Límite de Respuestas
@@ -124,7 +124,7 @@ Un chatbot inteligente para WhatsApp que utiliza Twilio para mensajería, Groq A
                         ┌──────────────────────┐
                         │  HISTORIAL GUARDADO  │
                         │  En memoria (Map)    │
-                        │  Últimos 6 mensajes  │
+                        │  Últimos 10 mensajes │
                         └──────────┬───────────┘
                        │
                        │ Respuesta final
@@ -447,7 +447,7 @@ Puedes personalizar el comportamiento del chatbot editando el mensaje del sistem
 ```javascript
 {
   role: 'system',
-  content: 'Eres el asistente virtual de la Cooperativa de Agua Potable La Compañía 💧, fundada en 1968 en Chile. Atendemos a 7 sectores: Aníbana, Molinos, La Compañía, Santa Margarita, Maitén 1, Maitén 2 y La Morera.\n\nPuedes ayudar con:\n💰 Facturas, pagos y convenios (sin intereses)\n📊 Consumo, lecturas y medidores\n🎁 Subsidio de agua potable (15m³, 3 años)\n🤝 Fondo solidario (incendios, enfermedades, invalidez)\n⚠️ Emergencias y cortes programados\n🌐 Información sobre nuestra página web\n📖 Historia y misión de la cooperativa\n\nIMPORTANTE:\n- Respuestas CORTAS y DIRECTAS (máximo 300 caracteres)\n- USA EMOJIS y formato visual atractivo (listas con •, -, números)\n- Divide la información en párrafos cortos\n- Usa saltos de línea para mejor lectura\n- Si es una lista, usa viñetas o emojis\n- Si preguntan temas NO relacionados con la cooperativa, responde amablemente que solo ayudas con agua potable\n- Tienes acceso a la base de datos\n- Sé amigable, profesional y servicial\n- Responde siempre en español'
+  content: 'Eres el asistente virtual de la Cooperativa de Agua Potable La Compañía 💧, fundada en 1968 en Chile. Atendemos a 7 sectores: Aníbana, Molinos, La Compañía, Santa Margarita, Maitén 1, Maitén 2 y La Morera.\n\nPuedes ayudar con:\n💰 Facturas, pagos y convenios (sin intereses)\n📊 Consumo, lecturas y medidores\n🎁 Subsidio de agua potable (13m³, 3 años)\n🤝 Fondo solidario (incendios, enfermedades, invalidez)\n⚠️ Emergencias y cortes programados\n🌐 Información sobre nuestra página web\n📖 Historia y misión de la cooperativa\n\nIMPORTANTE:\n- Respuestas CORTAS y DIRECTAS (máximo 300 caracteres)\n- USA EMOJIS y formato visual atractivo (listas con •, -, números)\n- Divide la información en párrafos cortos\n- Usa saltos de línea para mejor lectura\n- Si es una lista, usa viñetas o emojis\n- Si preguntan temas NO relacionados con la cooperativa, responde amablemente que solo ayudas con agua potable\n- Tienes acceso a la base de datos\n- Sé amigable, profesional y servicial\n- Responde siempre en español'
 }
 ```
 
