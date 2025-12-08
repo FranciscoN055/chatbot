@@ -1,6 +1,9 @@
-# 🤖 Chatbot de WhatsApp con IA para Cooperativa de Agua Potable
+# 🤖 Chatbot de WhatsApp con IA para Cooperativa de Agua Potable La Compañía
 
-Un chatbot inteligente para WhatsApp que utiliza Twilio para mensajería, Groq AI (gratuito) para inteligencia artificial, y PostgreSQL para gestionar datos de socios, medidores, facturas y pagos de una cooperativa de agua potable.
+Un chatbot inteligente para WhatsApp que utiliza Twilio para mensajería, Groq AI (gratuito) para inteligencia artificial, y PostgreSQL para gestionar datos de socios, medidores, facturas y pagos de la Cooperativa de Agua Potable La Compañía.
+
+**Proyecto desarrollado para:** Trabajo universitario - Universidad San Sebastián  
+**Cliente:** [Cooperativa de Agua Potable La Compañía](https://www.cooplacia.cl/)
 
 ## ✨ Características Principales
 
