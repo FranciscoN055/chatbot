@@ -64,16 +64,42 @@ async function queryDatabaseWithAI(userQuestion) {
     });
 
     // Pedir a la IA que genere una consulta SQL
-    const sqlPrompt = `Eres un experto en PostgreSQL. Basándote en el siguiente esquema de base de datos, genera UNA SOLA consulta SQL válida para responder a la pregunta del usuario. Responde ÚNICAMENTE con la consulta SQL, sin explicaciones ni formato markdown.
+    const sqlPrompt = `Eres un experto en PostgreSQL para una cooperativa de agua potable. Genera UNA SOLA consulta SQL válida para responder a la pregunta del usuario.
 
 ${schemaDescription}
 
-IMPORTANTE: 
-- La tabla "configuracion" contiene información general de la cooperativa con formato clave-valor
-- Para horarios de atención, busca: SELECT * FROM configuracion WHERE clave LIKE '%horario%'
-- Para contacto (teléfono, email, dirección), busca: SELECT * FROM configuracion WHERE clave IN ('telefono', 'email', 'direccion')
-- Para información general (subsidios, sectores, emergencias, historia, etc.), usa: SELECT * FROM configuracion WHERE clave LIKE '%palabra_clave%'
-- Para datos específicos de socios, medidores, facturas, etc., usa las tablas correspondientes
+GUÍA DE CONSULTAS POR TIPO DE PREGUNTA:
+
+📋 INFORMACIÓN GENERAL (usa tabla "configuracion"):
+- Horarios/atención → SELECT valor FROM configuracion WHERE clave = 'horario_atencion'
+- Contacto (teléfono) → SELECT valor FROM configuracion WHERE clave = 'telefono'
+- Contacto (email) → SELECT valor FROM configuracion WHERE clave = 'email'
+- Dirección/ubicación → SELECT valor FROM configuracion WHERE clave = 'direccion'
+- Página web → SELECT valor FROM configuracion WHERE clave = 'pagina_web'
+- Sectores → SELECT valor FROM configuracion WHERE clave = 'sectores'
+- Historia → SELECT clave, valor FROM configuracion WHERE clave LIKE '%historia%'
+- Subsidio → SELECT clave, valor FROM configuracion WHERE clave LIKE '%subsidio%'
+- Fondo solidario → SELECT clave, valor FROM configuracion WHERE clave LIKE '%fondo_solidario%'
+- Emergencias → SELECT clave, valor FROM configuracion WHERE clave LIKE '%emergencia%'
+- Convenios/pagos → SELECT clave, valor FROM configuracion WHERE clave LIKE '%convenio%' OR clave LIKE '%interes%'
+- Misión/visión → SELECT clave, valor FROM configuracion WHERE clave IN ('mision', 'vision')
+
+💰 DATOS OPERACIONALES:
+- Facturas de un socio → SELECT * FROM facturas WHERE socio_id = X
+- Pagos de un socio → SELECT * FROM pagos WHERE socio_id = X
+- Consumo/lecturas → SELECT * FROM lecturas WHERE medidor_id = X ORDER BY fecha DESC LIMIT 12
+- Tarifas → SELECT * FROM tarifas ORDER BY rango_min
+
+👤 DATOS DE SOCIOS:
+- Buscar socio → SELECT * FROM socios WHERE rut = 'X' OR nombre ILIKE '%X%'
+- Medidores de socio → SELECT * FROM medidores WHERE socio_id = X
+
+REGLAS IMPORTANTES:
+1. Responde SOLO con la consulta SQL, sin explicaciones
+2. NO uses formato markdown (sin \`\`\`sql)
+3. Para búsquedas en "configuracion", usa LIKE '%palabra%' cuando no sepas la clave exacta
+4. Para fechas recientes, usa ORDER BY fecha DESC LIMIT X
+5. Para nombres, usa ILIKE '%nombre%' (case insensitive)
 
 Pregunta del usuario: ${userQuestion}
 
