@@ -320,14 +320,45 @@ async function processMessages(fromNumber, toNumber) {
     });
 
     const totalTime = ((Date.now() - startTime) / 1000).toFixed(2);
-    console.log(`🤖 Respuesta enviada en ${totalTime}s: ${aiResponse}`);
+    console.log(`🤖 Respuesta generada en ${totalTime}s: ${aiResponse}`);
 
-    // Enviar respuesta por WhatsApp usando Twilio
-    await twilioClient.messages.create({
-      body: aiResponse,
-      from: toNumber,
-      to: fromNumber
-    });
+    // Enviar respuesta por WhatsApp usando Twilio (con reintentos)
+    const twilioStartTime = Date.now();
+    console.log('📤 Enviando mensaje a Twilio...');
+    
+    let message;
+    let retries = 3;
+    let lastError;
+    
+    for (let i = 0; i < retries; i++) {
+      try {
+        message = await Promise.race([
+          twilioClient.messages.create({
+            body: aiResponse,
+            from: toNumber,
+            to: fromNumber
+          }),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Timeout de Twilio')), 10000)
+          )
+        ]);
+        break; // Éxito, salir del loop
+      } catch (error) {
+        lastError = error;
+        console.warn(`⚠️ Intento ${i + 1}/${retries} falló:`, error.message);
+        if (i < retries - 1) {
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Esperar 1s antes de reintentar
+        }
+      }
+    }
+    
+    if (!message) {
+      throw new Error(`Twilio falló después de ${retries} intentos: ${lastError?.message}`);
+    }
+    
+    const twilioTime = ((Date.now() - twilioStartTime) / 1000).toFixed(2);
+    const totalProcessTime = ((Date.now() - startTime) / 1000).toFixed(2);
+    console.log(`✅ Mensaje enviado a Twilio en ${twilioTime}s (Total: ${totalProcessTime}s) - SID: ${message.sid}`);
 
   } catch (error) {
     console.error('❌ Error procesando mensaje:', error);
